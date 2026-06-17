@@ -28,13 +28,14 @@ import {
 // 1) Configuración del proyecto Firebase
 // ----------------------------------------------------------------------------
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID",
-}
+  apiKey: "AIzaSyBioHRo8J0NirBSpcY6fxDQwqsMTttKQZU",
+  authDomain: "fiados-9792d.firebaseapp.com",
+  projectId: "fiados-9792d",
+  storageBucket: "fiados-9792d.firebasestorage.app",
+  messagingSenderId: "1002377417282",
+  appId: "1:1002377417282:web:617dbb51cc7ed2c036d3db",
+  measurementId: "G-T0C2E9CG0R"
+};
 
 // ----------------------------------------------------------------------------
 // 2) Inicialización
