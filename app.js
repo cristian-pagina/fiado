@@ -18,6 +18,8 @@ import {
   addDoc,
   query,
   orderBy,
+  where,
+  limit,
   serverTimestamp,
 } from "./firebase.js"
 
