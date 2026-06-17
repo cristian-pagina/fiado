@@ -1,0 +1,523 @@
+/* ==========================================================================
+   style.css — Cuaderno de Fiados
+   Diseño moderno, responsive, paleta verde y blanco.
+   ========================================================================== */
+
+/* ----- Variables de tema ----- */
+:root {
+  --green: #16a34a;
+  --green-dark: #15803d;
+  --green-light: #dcfce7;
+  --white: #ffffff;
+  --bg: #f1f5f4;
+  --text: #14241c;
+  --muted: #6b7c75;
+  --border: #e2e8e5;
+  --danger: #dc2626;
+  --danger-dark: #b91c1c;
+  --radius: 14px;
+  --shadow: 0 4px 16px rgba(16, 90, 50, 0.08);
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+/* ----- Reset básico ----- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ----- Tarjetas ----- */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* ----- Botones ----- */
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.05s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.btn-primary {
+  background: var(--green);
+  color: var(--white);
+}
+.btn-primary:hover {
+  background: var(--green-dark);
+}
+
+.btn-outline {
+  background: var(--white);
+  color: var(--green-dark);
+  border: 1.5px solid var(--green);
+}
+.btn-outline:hover {
+  background: var(--green-light);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+}
+.btn-danger:hover {
+  background: var(--danger-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover {
+  color: var(--text);
+}
+
+/* ----- Inputs ----- */
+input {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: var(--font);
+  margin-top: 0.25rem;
+}
+input:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+label {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ==========================================================================
+   LOGIN
+   ========================================================================== */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(160deg, var(--green-light), var(--bg));
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 0.75rem;
+  background: var(--green);
+  color: var(--white);
+  font-size: 2rem;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-card h1 {
+  font-size: 1.4rem;
+}
+
+.login-card form {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   APP — topbar y tabs
+   ========================================================================== */
+.topbar {
+  background: var(--green);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.topbar-logo {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.topbar-actions .muted {
+  color: rgba(255, 255, 255, 0.85);
+}
+.topbar .btn-ghost {
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.tabs {
+  display: flex;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.tab {
+  flex: 1;
+  min-width: 110px;
+  background: none;
+  border: none;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+.tab.active {
+  color: var(--green-dark);
+  border-bottom-color: var(--green);
+}
+
+/* ----- Contenedor principal ----- */
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ----- Buscador ----- */
+.search-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.search-row input {
+  margin-top: 0;
+}
+
+/* ----- Ficha del cliente ----- */
+.client-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.debt-box {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+.debt-box strong {
+  font-size: 1.6rem;
+  color: var(--green-dark);
+}
+
+.operations {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.operations .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ==========================================================================
+   DASHBOARD
+   ========================================================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0;
+}
+.stat strong {
+  font-size: 1.8rem;
+  color: var(--green-dark);
+}
+
+@media (min-width: 560px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==========================================================================
+   HISTORIAL
+   ========================================================================== */
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.history-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--green);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+.history-item.tipo-abono {
+  border-left-color: #0ea5e9;
+}
+.history-item.tipo-pago {
+  border-left-color: var(--green-dark);
+}
+.history-item.tipo-cargo {
+  border-left-color: var(--danger);
+}
+
+.history-item .hi-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.history-item .hi-tipo {
+  font-weight: 700;
+}
+.history-item .hi-monto {
+  font-weight: 700;
+}
+.history-item .hi-meta {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 50;
+}
+
+.modal {
+  width: 100%;
+  max-width: 380px;
+  margin-bottom: 0;
+}
+.modal h3 {
+  margin-bottom: 0.5rem;
+}
+.modal-input-wrap {
+  margin: 0.75rem 0;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   LOADER (spinner)
+   ========================================================================== */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid var(--green-light);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   TOASTS (mensajes)
+   ========================================================================== */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 200;
+  width: calc(100% - 2rem);
+  max-width: 380px;
+}
+.toast {
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  color: var(--white);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  animation: toast-in 0.2s ease;
+}
+.toast-success {
+  background: var(--green);
+}
+.toast-error {
+  background: var(--danger);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* ==========================================================================
+   DEUDORES (lista de clientes con deuda)
+   ========================================================================== */
+.deudores-summary {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+.deudores-summary strong {
+  font-size: 1.25rem;
+  color: var(--danger);
+}
+.deudores-summary .muted:last-child {
+  margin-left: auto;
+}
+.deudores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.deudor-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  background: var(--white);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.deudor-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--green);
+}
+.deudor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.deudor-nombre {
+  font-weight: 600;
+}
+.deudor-rut {
+  font-size: 0.85rem;
+}
+.deudor-deuda {
+  font-weight: 700;
+  color: var(--danger);
+  white-space: nowrap;
+}

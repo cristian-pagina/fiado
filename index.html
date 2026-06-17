@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#16a34a" />
+    <title>Cuaderno de Fiados</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ====================================================================
+         INDICADOR DE CARGA GLOBAL (overlay)
+    ===================================================================== -->
+    <div id="loader" class="loader-overlay hidden" aria-live="polite" aria-busy="true">
+      <div class="spinner" role="status" aria-label="Cargando"></div>
+    </div>
+
+    <!-- ====================================================================
+         CONTENEDOR DE NOTIFICACIONES (toasts de éxito/error)
+    ===================================================================== -->
+    <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+
+    <!-- ====================================================================
+         PANTALLA DE LOGIN
+    ===================================================================== -->
+    <section id="login-screen" class="login-screen">
+      <div class="login-card card">
+        <div class="login-logo" aria-hidden="true">$</div>
+        <h1>Cuaderno de Fiados</h1>
+        <p class="muted">Inicia sesión para continuar</p>
+
+        <form id="login-form" autocomplete="off">
+          <label for="login-user">Usuario</label>
+          <input id="login-user" type="text" placeholder="Usuario" required />
+
+          <label for="login-pass">Contraseña</label>
+          <input id="login-pass" type="password" placeholder="Contraseña" required />
+
+          <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         APLICACIÓN (oculta hasta iniciar sesión)
+    ===================================================================== -->
+    <div id="app" class="app hidden">
+      <!-- Barra superior -->
+      <header class="topbar">
+        <div class="topbar-brand">
+          <span class="topbar-logo" aria-hidden="true">$</span>
+          <span>Cuaderno de Fiados</span>
+        </div>
+        <div class="topbar-actions">
+          <span id="current-user" class="muted"></span>
+          <button id="logout-btn" class="btn btn-ghost">Cerrar sesión</button>
+        </div>
+      </header>
+
+      <!-- Navegación entre vistas -->
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-view="inicio" role="tab">Inicio</button>
+        <button class="tab" data-view="deudores" role="tab">Deudores</button>
+        <button class="tab" data-view="dashboard" role="tab">Dashboard</button>
+        <button class="tab" data-view="historial" role="tab">Historial</button>
+      </nav>
+
+      <main class="container">
+        <!-- ============================================================
+             VISTA: INICIO (buscar / registrar / operar)
+        ============================================================= -->
+        <section id="view-inicio" class="view">
+          <!-- Buscador -->
+          <div class="card">
+            <h2>Buscar cliente</h2>
+            <div class="search-row">
+              <input id="search-rut" type="text" placeholder="Ej: 12.345.678-5" inputmode="text" />
+              <button id="search-btn" class="btn btn-primary">Buscar</button>
+            </div>
+            <small class="muted">Ingresa el RUT del cliente y presiona Buscar.</small>
+          </div>
+
+          <!-- Ficha del cliente (oculta hasta encontrar uno) -->
+          <div id="client-card" class="card hidden">
+            <div class="client-header">
+              <div>
+                <h2 id="client-name">—</h2>
+                <p class="muted" id="client-rut">—</p>
+              </div>
+              <div class="debt-box">
+                <span class="muted">Deuda actual</span>
+                <strong id="client-debt">$0</strong>
+              </div>
+            </div>
+
+            <div class="operations">
+              <button class="btn btn-primary" data-op="cargo">Agregar deuda</button>
+              <button class="btn btn-outline" data-op="abono">Abonar</button>
+              <button class="btn btn-danger" data-op="pago">Saldar deuda</button>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ============================================================
+             VISTA: DEUDORES (lista de clientes con deuda)
+        ============================================================= -->
+        <section id="view-deudores" class="view hidden">
+          <div class="history-header">
+            <h2>Lista de deudores</h2>
+            <button id="refresh-deudores" class="btn btn-outline">Actualizar</button>
+          </div>
+          <div class="search-row">
+            <input id="filter-deudores" type="text" placeholder="Filtrar por nombre o RUT" />
+          </div>
+          <div class="deudores-summary">
+            <span class="muted">Total adeudado:</span>
+            <strong id="deudores-total">$0</strong>
+            <span class="muted" id="deudores-count">0 deudores</span>
+          </div>
+          <div id="deudores-list" class="deudores-list">
+            <p class="muted">Sin deudores por mostrar.</p>
+          </div>
+        </section>
+
+        <!-- ============================================================
+             VISTA: DASHBOARD
+        ============================================================= -->
+        <section id="view-dashboard" class="view hidden">
+          <h2>Resumen</h2>
+          <div class="stats-grid">
+            <div class="card stat">
+              <span class="muted">Clientes</span>
+              <strong id="stat-clientes">0</strong>
+            </div>
+            <div class="card stat">
+              <span class="muted">Total fiado</span>
+              <strong id="stat-deuda">$0</strong>
+            </div>
+            <div class="card stat">
+              <span class="muted">Movimientos</span>
+              <strong id="stat-movimientos">0</strong>
+            </div>
+          </div>
+          <button id="refresh-dashboard" class="btn btn-outline">Actualizar</button>
+        </section>
+
+        <!-- ============================================================
+             VISTA: HISTORIAL
+        ============================================================= -->
+        <section id="view-historial" class="view hidden">
+          <div class="history-header">
+            <h2>Historial de movimientos</h2>
+            <button id="refresh-history" class="btn btn-outline">Actualizar</button>
+          </div>
+          <div id="history-list" class="history-list">
+            <p class="muted">Sin movimientos por mostrar.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ====================================================================
+         MODAL DE CONFIRMACIÓN (reutilizable)
+    ===================================================================== -->
+    <div id="modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal card">
+        <h3 id="modal-title">Confirmar</h3>
+        <p id="modal-message">¿Estás seguro?</p>
+
+        <div id="modal-input-wrap" class="modal-input-wrap">
+          <label for="modal-input">Monto</label>
+          <input id="modal-input" type="number" min="1" step="1" placeholder="0" />
+        </div>
+
+        <div class="modal-actions">
+          <button id="modal-cancel" class="btn btn-ghost">Cancelar</button>
+          <button id="modal-confirm" class="btn btn-primary">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         MODAL DE NUEVO FIADOR (registro rápido)
+    ===================================================================== -->
+    <div id="new-client-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="nc-title">
+      <div class="modal card">
+        <h3 id="nc-title">Nuevo fiador</h3>
+        <p class="muted">El RUT buscado no está registrado. Agrega los datos del nuevo fiador.</p>
+
+        <form id="new-client-form" autocomplete="off">
+          <label for="nc-rut">RUT</label>
+          <input id="nc-rut" type="text" readonly />
+
+          <label for="nc-nombre">Nombre</label>
+          <input id="nc-nombre" type="text" placeholder="Nombre" required />
+
+          <label for="nc-apellido">Apellido</label>
+          <input id="nc-apellido" type="text" placeholder="Apellido" required />
+
+          <div class="modal-actions">
+            <button type="button" id="nc-cancel" class="btn btn-ghost">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Agregar fiador</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- App como módulo ES6 -->
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
