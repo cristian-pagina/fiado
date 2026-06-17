@@ -175,7 +175,7 @@ function abrirModal({ titulo, mensaje, pedirMonto = false }) {
 }
 
 // ============================================================================
-// AUTENTICACIÓN LOCAL
+// AUTENTICACIÓN CON FIREBASE FIRESTORE
 // ============================================================================
 
 /** Revisa si hay una sesión guardada al iniciar la app */
@@ -188,18 +188,44 @@ function comprobarSesion() {
 }
 
 /** Maneja el envío del formulario de login */
-function manejarLogin(e) {
+async function manejarLogin(e) {
   e.preventDefault()
   const usuario = $("login-user").value.trim()
   const pass = $("login-pass").value
 
-  if (usuario === CREDENCIALES.usuario && pass === CREDENCIALES.password) {
+  const btnLogin = $("login-form").querySelector("button[type='submit']")
+  const textoOriginal = btnLogin.textContent
+  btnLogin.disabled = true
+  btnLogin.textContent = "Verificando..."
+
+  try {
+    const usuariosRef = collection(db, "usuarios")
+    const q = query(usuariosRef, where("nombre_usuario", "==", usuario), limit(1))
+    const snapshot = await getDocs(q)
+
+    if (snapshot.empty) {
+      notificar("Usuario o contraseña incorrectos", "error")
+      return
+    }
+
+    const docUsuario = snapshot.docs[0].data()
+
+    if (docUsuario.password_usuario !== pass) {
+      notificar("Usuario o contraseña incorrectos", "error")
+      return
+    }
+
     estado.usuario = usuario
     localStorage.setItem(STORAGE_KEY, usuario)
     entrarApp()
     notificar("Bienvenido, " + usuario)
-  } else {
-    notificar("Usuario o contraseña incorrectos", "error")
+
+  } catch (error) {
+    console.error("Error al verificar credenciales:", error)
+    notificar("Error de conexión. Intenta de nuevo.", "error")
+  } finally {
+    btnLogin.disabled = false
+    btnLogin.textContent = textoOriginal
   }
 }
 
