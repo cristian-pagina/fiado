@@ -11,9 +11,7 @@ import {
   db,
   collection,
   doc,
-  getDoc,
   getDocs,
-  setDoc,
   updateDoc,
   addDoc,
   query,
@@ -108,9 +106,11 @@ function validarRut(rut) {
   return dv === dvEsperado
 }
 
-/** Formatea un RUT para mostrarlo: "123456785" -> "12.345.678-5" */
+/** Formatea un RUT para mostrarlo: "123456785" -> "12.345.678-5". Si está vacío, devuelve "—". */
 function formatearRut(rut) {
+  if (!rut) return "—"
   const limpio = limpiarRut(rut)
+  if (limpio.length < 2) return rut
   const cuerpo = limpio.slice(0, -1)
   const dv = limpio.slice(-1)
   const cuerpoFmt = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -268,61 +268,156 @@ function cambiarVista(vista) {
 }
 
 // ============================================================================
-// CLIENTES — BUSCAR Y REGISTRAR
+// CLIENTES — BUSCAR Y REGISTRAR (por nombre, con ID autogenerado)
 // ============================================================================
 
-/** Busca un cliente por RUT en Firestore */
-async function buscarCliente() {
-  const entrada = $("search-rut").value.trim()
+// Cache en memoria de todos los clientes, para sugerir nombres sin
+// reconsultar Firestore en cada tecla. Se carga la primera vez que se
+// necesita y se refresca al registrar un cliente nuevo.
+let clientesCache = []
+let clientesCacheCargado = false
+let indiceSugerenciaActiva = -1
 
-  // Validación de RUT antes de consultar
-  if (!validarRut(entrada)) {
-    notificar("RUT inválido. Verifica e intenta nuevamente.", "error")
+/** Carga (o recarga) el caché completo de clientes desde Firestore */
+async function cargarClientesCache(forzar = false) {
+  if (clientesCacheCargado && !forzar) return clientesCache
+  const snap = await getDocs(collection(db, "clientes"))
+  clientesCache = []
+  snap.forEach((d) => {
+    clientesCache.push({ id: d.id, ...d.data() })
+  })
+  clientesCacheCargado = true
+  return clientesCache
+}
+
+/** Maneja la entrada de texto en el buscador por nombre */
+async function manejarBusquedaInput() {
+  const texto = $("search-nombre").value.trim().toLowerCase()
+  indiceSugerenciaActiva = -1
+
+  if (!texto) {
+    ocultarSugerencias()
     return
   }
 
-  const rut = limpiarRut(entrada)
-
-  // Reiniciamos tarjetas
-  $("client-card").classList.add("hidden")
-  cerrarModalNuevoCliente()
-  estado.clienteActual = null
-
-  mostrarLoader(true)
   try {
-    const ref = doc(db, "clientes", rut)
-    const snap = await getDoc(ref)
-
-    if (snap.exists()) {
-      // Cliente existente -> mostrar ficha
-      estado.clienteActual = { id: rut, ...snap.data() }
-      mostrarFichaCliente()
-    } else {
-      // No existe -> abrir ventana para registrar nuevo fiador
-      abrirModalNuevoCliente(rut)
-      notificar("Cliente no encontrado. Agrega un nuevo fiador.", "error")
-    }
+    await cargarClientesCache()
   } catch (err) {
-    console.log("[v0] Error al buscar cliente:", err.message)
-    notificar("Error al consultar la base de datos", "error")
-  } finally {
-    mostrarLoader(false)
+    console.log("[v0] Error al cargar clientes:", err.message)
+    notificar("No se pudo consultar la base de datos", "error")
+    return
   }
+
+  const coincidencias = clientesCache
+    .filter((c) => {
+      const nombreCompleto = `${c.nombre || ""} ${c.apellido || ""}`.toLowerCase()
+      return nombreCompleto.includes(texto)
+    })
+    .slice(0, 8)
+
+  renderizarSugerencias(coincidencias, texto)
+}
+
+/** Pinta el dropdown de sugerencias debajo del input de búsqueda */
+function renderizarSugerencias(coincidencias, texto) {
+  const cont = $("search-suggestions")
+  cont.innerHTML = ""
+
+  if (coincidencias.length === 0) {
+    const vacio = document.createElement("div")
+    vacio.className = "suggestion-empty"
+    vacio.textContent = "Sin coincidencias."
+    cont.appendChild(vacio)
+
+    const crear = document.createElement("button")
+    crear.type = "button"
+    crear.className = "suggestion-create"
+    crear.textContent = "+ Crear nuevo fiador"
+    crear.addEventListener("click", () => {
+      ocultarSugerencias()
+      abrirModalNuevoCliente()
+    })
+    cont.appendChild(crear)
+
+    cont.classList.remove("hidden")
+    return
+  }
+
+  coincidencias.forEach((c) => {
+    const item = document.createElement("button")
+    item.type = "button"
+    item.className = "suggestion-item"
+    item.innerHTML = `
+      <span class="suggestion-nombre">${c.nombre} ${c.apellido}</span>
+      <span class="suggestion-meta">${c.rut ? formatearRut(c.rut) : "Sin RUT"} · Deuda: ${formatearCLP(c.deuda)}</span>
+    `
+    item.addEventListener("click", () => seleccionarCliente(c))
+    cont.appendChild(item)
+  })
+
+  cont.classList.remove("hidden")
+}
+
+/** Oculta el dropdown de sugerencias */
+function ocultarSugerencias() {
+  $("search-suggestions").classList.add("hidden")
+  $("search-suggestions").innerHTML = ""
+  indiceSugerenciaActiva = -1
+}
+
+/** Navegación con teclado (flechas y enter) sobre las sugerencias */
+function manejarTecladoBusqueda(e) {
+  const cont = $("search-suggestions")
+  if (cont.classList.contains("hidden")) return
+
+  const items = Array.from(cont.querySelectorAll(".suggestion-item"))
+  if (items.length === 0) return
+
+  if (e.key === "ArrowDown") {
+    e.preventDefault()
+    indiceSugerenciaActiva = Math.min(indiceSugerenciaActiva + 1, items.length - 1)
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault()
+    indiceSugerenciaActiva = Math.max(indiceSugerenciaActiva - 1, 0)
+  } else if (e.key === "Enter") {
+    e.preventDefault()
+    if (indiceSugerenciaActiva >= 0) items[indiceSugerenciaActiva].click()
+    return
+  } else if (e.key === "Escape") {
+    ocultarSugerencias()
+    return
+  } else {
+    return
+  }
+
+  items.forEach((it, i) => it.classList.toggle("active", i === indiceSugerenciaActiva))
+}
+
+/** Selecciona un cliente desde las sugerencias y muestra su ficha */
+function seleccionarCliente(c) {
+  estado.clienteActual = c
+  $("search-nombre").value = `${c.nombre} ${c.apellido}`
+  ocultarSugerencias()
+  mostrarFichaCliente()
 }
 
 /** Rellena y muestra la ficha del cliente actual */
 function mostrarFichaCliente() {
   const c = estado.clienteActual
   $("client-name").textContent = `${c.nombre} ${c.apellido}`
-  $("client-rut").textContent = formatearRut(c.rut)
+  $("client-rut").textContent = c.rut ? formatearRut(c.rut) : "Sin RUT registrado"
   $("client-debt").textContent = formatearCLP(c.deuda)
   $("client-card").classList.remove("hidden")
 }
 
-/** Abre el modal de nuevo fiador con el RUT buscado precargado */
-function abrirModalNuevoCliente(rut) {
+/** Abre el modal de nuevo fiador. Si se llega desde un texto buscado sin resultados, se precarga el nombre. */
+function abrirModalNuevoCliente(textoBuscado = "") {
   $("new-client-form").reset()
-  $("nc-rut").value = formatearRut(rut)
+  if (textoBuscado) {
+    const partes = textoBuscado.trim().split(/\s+/)
+    $("nc-nombre").value = partes[0] || ""
+    $("nc-apellido").value = partes.slice(1).join(" ") || ""
+  }
   $("new-client-modal").classList.remove("hidden")
   $("nc-nombre").focus()
 }
@@ -332,16 +427,26 @@ function cerrarModalNuevoCliente() {
   $("new-client-modal").classList.add("hidden")
 }
 
-/** Registra un nuevo cliente */
+/** Registra un nuevo cliente con ID autogenerado por Firestore */
 async function registrarCliente(e) {
   e.preventDefault()
-  const rut = limpiarRut($("nc-rut").value)
   const nombre = $("nc-nombre").value.trim()
   const apellido = $("nc-apellido").value.trim()
+  const rutIngresado = $("nc-rut").value.trim()
 
   if (!nombre || !apellido) {
     notificar("Nombre y apellido son obligatorios", "error")
     return
+  }
+
+  // El RUT es opcional. Si se ingresó, se valida; si no, se guarda vacío.
+  let rut = ""
+  if (rutIngresado) {
+    if (!validarRut(rutIngresado)) {
+      notificar("El RUT ingresado no es válido. Déjalo en blanco si no lo tienes.", "error")
+      return
+    }
+    rut = limpiarRut(rutIngresado)
   }
 
   mostrarLoader(true)
@@ -353,13 +458,17 @@ async function registrarCliente(e) {
       deuda: 0,
       fechaCreacion: serverTimestamp(),
     }
-    // Usamos el RUT como ID del documento para búsquedas directas
-    await setDoc(doc(db, "clientes", rut), nuevoCliente)
+    // ID autogenerado por Firestore (ya no se usa el RUT como ID del documento)
+    const ref = await addDoc(collection(db, "clientes"), nuevoCliente)
 
     notificar("Fiador registrado correctamente")
-    estado.clienteActual = { id: rut, ...nuevoCliente, deuda: 0 }
+    estado.clienteActual = { id: ref.id, ...nuevoCliente, deuda: 0 }
+
+    // Refrescamos el caché para que aparezca en futuras búsquedas
+    await cargarClientesCache(true)
 
     cerrarModalNuevoCliente()
+    $("search-nombre").value = `${nombre} ${apellido}`
     mostrarFichaCliente()
   } catch (err) {
     console.log("[v0] Error al registrar cliente:", err.message)
@@ -434,7 +543,8 @@ async function ejecutarOperacion(tipoOp) {
     await updateDoc(doc(db, "clientes", c.id), { deuda: deudaNueva })
 
     await registrarMovimiento({
-      rut: c.rut,
+      clienteId: c.id,
+      rut: c.rut || "",
       nombre: `${c.nombre} ${c.apellido}`,
       tipo: tipoMovimiento,
       monto,
@@ -496,14 +606,13 @@ async function cargarDeudores() {
 /** Pinta la lista de deudores aplicando el filtro de texto actual */
 function renderizarDeudores() {
   const lista = $("deudores-list")
-  const filtro = limpiarRut($("filter-deudores").value).toLowerCase()
   const filtroTexto = $("filter-deudores").value.trim().toLowerCase()
 
   const visibles = deudoresCache.filter((c) => {
     if (!filtroTexto) return true
     const nombreCompleto = `${c.nombre} ${c.apellido}`.toLowerCase()
-    const rutLimpio = limpiarRut(c.rut).toLowerCase()
-    return nombreCompleto.includes(filtroTexto) || rutLimpio.includes(filtro)
+    const rutLimpio = c.rut ? limpiarRut(c.rut).toLowerCase() : ""
+    return nombreCompleto.includes(filtroTexto) || rutLimpio.includes(filtroTexto)
   })
 
   // Resumen (sobre los visibles)
@@ -525,7 +634,7 @@ function renderizarDeudores() {
     item.innerHTML = `
       <div class="deudor-info">
         <span class="deudor-nombre">${c.nombre} ${c.apellido}</span>
-        <span class="deudor-rut muted">${formatearRut(c.rut)}</span>
+        <span class="deudor-rut muted">${c.rut ? formatearRut(c.rut) : "Sin RUT"}</span>
       </div>
       <span class="deudor-deuda">${formatearCLP(c.deuda)}</span>
     `
@@ -533,7 +642,7 @@ function renderizarDeudores() {
     item.addEventListener("click", () => {
       estado.clienteActual = c
       cambiarVista("inicio")
-      $("search-rut").value = formatearRut(c.rut)
+      $("search-nombre").value = `${c.nombre} ${c.apellido}`
       mostrarFichaCliente()
     })
     lista.appendChild(item)
@@ -627,11 +736,23 @@ function init() {
     tab.addEventListener("click", () => cambiarVista(tab.dataset.view))
   })
 
-  // Buscar / registrar cliente
-  $("search-btn").addEventListener("click", buscarCliente)
-  $("search-rut").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") buscarCliente()
+  // Buscar cliente por nombre (con sugerencias en vivo)
+  let debounceBusqueda = null
+  $("search-nombre").addEventListener("input", () => {
+    clearTimeout(debounceBusqueda)
+    debounceBusqueda = setTimeout(manejarBusquedaInput, 150)
   })
+  $("search-nombre").addEventListener("keydown", manejarTecladoBusqueda)
+  $("search-nombre").addEventListener("focus", () => {
+    if ($("search-nombre").value.trim()) manejarBusquedaInput()
+  })
+  // Cierra el dropdown si se hace clic fuera de él
+  document.addEventListener("click", (e) => {
+    const wrap = document.querySelector(".search-input-wrap")
+    if (wrap && !wrap.contains(e.target)) ocultarSugerencias()
+  })
+
+  $("open-new-client").addEventListener("click", () => abrirModalNuevoCliente())
   $("new-client-form").addEventListener("submit", registrarCliente)
   $("nc-cancel").addEventListener("click", cerrarModalNuevoCliente)
 
