@@ -263,6 +263,73 @@ h2 {
   margin-top: 0;
 }
 
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  z-index: 30;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: var(--green-light);
+}
+.suggestion-item:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+}
+.suggestion-nombre {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.suggestion-meta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.suggestion-empty {
+  padding: 0.85rem;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.suggestion-create {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  font-family: var(--font);
+  font-weight: 600;
+  color: var(--green-dark);
+}
+.suggestion-create:hover {
+  background: var(--green-light);
+}
+
 /* ----- Ficha del cliente ----- */
 .client-header {
   display: flex;
