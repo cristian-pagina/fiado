@@ -74,10 +74,13 @@
           <div class="card">
             <h2>Buscar cliente</h2>
             <div class="search-row">
-              <input id="search-rut" type="text" placeholder="Ej: 12.345.678-5" inputmode="text" />
-              <button id="search-btn" class="btn btn-primary">Buscar</button>
+              <div class="search-input-wrap">
+                <input id="search-nombre" type="text" placeholder="Escribe un nombre o apellido..." autocomplete="off" />
+                <div id="search-suggestions" class="suggestions hidden"></div>
+              </div>
             </div>
-            <small class="muted">Ingresa el RUT del cliente y presiona Buscar.</small>
+            <small class="muted">Escribe el nombre del cliente y elige una sugerencia.</small>
+            <button id="open-new-client" class="btn btn-outline btn-block">+ Agregar nuevo fiador</button>
           </div>
 
           <!-- Ficha del cliente (oculta hasta encontrar uno) -->
@@ -186,17 +189,17 @@
     <div id="new-client-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="nc-title">
       <div class="modal card">
         <h3 id="nc-title">Nuevo fiador</h3>
-        <p class="muted">El RUT buscado no está registrado. Agrega los datos del nuevo fiador.</p>
+        <p class="muted">Agrega los datos del nuevo fiador. El RUT es opcional.</p>
 
         <form id="new-client-form" autocomplete="off">
-          <label for="nc-rut">RUT</label>
-          <input id="nc-rut" type="text" readonly />
-
           <label for="nc-nombre">Nombre</label>
           <input id="nc-nombre" type="text" placeholder="Nombre" required />
 
           <label for="nc-apellido">Apellido</label>
           <input id="nc-apellido" type="text" placeholder="Apellido" required />
+
+          <label for="nc-rut">RUT (opcional)</label>
+          <input id="nc-rut" type="text" placeholder="Ej: 12.345.678-5" />
 
           <div class="modal-actions">
             <button type="button" id="nc-cancel" class="btn btn-ghost">Cancelar</button>
